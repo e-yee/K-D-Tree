@@ -57,5 +57,6 @@ vector<Location> readFile(string filename) {
         vt_location.push_back(p);
     }
 
+    ifs.close();
     return vt_location;
 }
