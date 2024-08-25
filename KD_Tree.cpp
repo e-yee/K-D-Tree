@@ -1,6 +1,6 @@
-#include "K-DTree.h"
+#include "KD_Tree.h"
 
-Location getPoint(string data) {
+Location getLocation(string data) {
     Location location;
     stringstream ss(data);
 
@@ -52,7 +52,7 @@ vector<Location> readFile(string filename) {
     Location p;
     while (!ifs.eof()) {
         getline(ifs, str_data);
-        p = getPoint(str_data);
+        p = getLocation(str_data);
 
         vt_location.push_back(p);
     }

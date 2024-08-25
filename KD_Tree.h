@@ -1,3 +1,5 @@
+#pragma once
+
 #include <iostream>
 #include <fstream>
 #include <sstream>
@@ -12,6 +14,7 @@ struct Location {
     string country;
     long long population;
 };
+
 struct Node {
     Location key;
     Node* left;
