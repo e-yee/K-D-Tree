@@ -1,5 +1,7 @@
 #include "File.h"
 
+#define EMPTY "NULL"
+
 Location getLocation(string data) {
     Location location;
     stringstream ss(data);
@@ -59,4 +61,38 @@ vector<Location> readFile(string filename) {
 
     ifs.close();
     return vt_location;
+}
+
+void serialize(Node* root, ofstream &ofs)
+{
+    if (root == NULL)
+    {
+        ofs << EMPTY << '\n';
+        return;
+    }
+
+    ofs << root->key.city << ',' << root->key.point[0] << ',' << root->key.point[1] 
+    << ',' << root->key.country << ',' << root->key.population << '\n';
+    serialize(root->left, ofs);
+    serialize(root->right, ofs);
+    return;
+}
+
+
+void deserialize(Node*& root, ifstream &ifs)
+{
+    string line;
+    getline(ifs, line, '\n');
+    if (line == EMPTY)
+    {
+        root = NULL;
+        return;
+    }
+
+    Location data = getLocation(line);
+
+    root = new Node(data);
+    deserialize(root->left, ifs);
+    deserialize(root->right, ifs);
+    return;
 }
