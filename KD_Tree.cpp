@@ -1,30 +1,9 @@
 #include "KD_Tree.h"
 #include <algorithm>
 #include <cmath>
+#define DIMENSION 2
 
 using namespace std;
-
-int dimension = 2;
-
-Node* rotateLeft(Node* &root)
-{
-    if (root == NULL) return NULL;
-    Node* right_child = root->right;
-    Node* left_subchild = right_child->left;
-    right_child->left = root;
-    root->right = left_subchild;
-    return right_child;
-}
-
-Node* rotateRight(Node* &root)
-{
-    if (root == NULL) return NULL;
-    Node* left_child = root->left;
-    Node* right_subchild = left_child->right;
-    left_child->right = root;
-    root->left = right_subchild;
-    return left_child;
-}
 
 int getHeight(Node* root) 
 {
@@ -38,27 +17,31 @@ int getBalanceFactor(Node* root)
     return getHeight(root->left) - getHeight(root->right);
 }
 
-void setBalance(Node* &root, Location key, int depth) 
+void getSubList (Node* root, vector<Location> &sublist)
 {
     if (root == NULL) return;
+
+    getSubList(root->left, sublist);
+    getSubList(root->right, sublist);
+    sublist.push_back(root->key);
+    return;
+}
+
+// Rebalancing The Tree
+void setBalance(Node* &root, int depth) 
+{
+    if (root == NULL) return;
+    setBalance(root->left, depth + 1);
+    setBalance(root->right, depth + 1);
+
     int balance = getBalanceFactor(root);
 
-    if (balance > 1)
-        if (key.point[depth % dimension] < root->left->key.point[depth % dimension])
-            root = rotateRight(root);
-        else if (key.point[depth % dimension] >= root->left->key.point[depth % dimension])
-        {
-            root->left = rotateLeft(root->left);
-            root = rotateRight(root);
-        }
-    else if (balance < -1)
-        if (key.point[depth % dimension] >= root->right->key.point[depth % dimension])
-            root = rotateLeft(root);
-        else if (key.point[depth % dimension] < root->right->key.point[depth % dimension])
-        {
-            root->right = rotateRight(root->right);
-            root = rotateLeft(root);
-        }
+    if (balance >= -1 && balance <= 1) return;
+
+    vector<Location> sublist;
+    getSubList(root, sublist);
+    deleteList(root);
+    insertListCity(root, sublist, depth);
     return;
 }
 
@@ -71,11 +54,9 @@ void insertOneCity(Node* &root, Location data, int depth)
         return; 
     }
 
-    if (data.point[depth % dimension] < root->key.point[depth % dimension]) 
+    if (data.point[depth % DIMENSION] < root->key.point[depth % DIMENSION]) 
         insertOneCity(root->left, data, depth + 1);
     else insertOneCity(root->right, data, depth + 1);
-    
-    // setBalance(root, data, depth);
 }
 
 // Sort Condition For Node In X Axis
@@ -92,7 +73,7 @@ bool sortInYAxis(Location a, Location b) {
 void insertListCity(Node* &root, vector<Location> &list, int depth) {
     if (list.empty()) return;
 
-    int axis = depth % dimension;
+    int axis = depth % DIMENSION;
 
     // Sort The List By Axis
     if (axis == 0)
@@ -144,8 +125,8 @@ pair<double, double> top_right, int depth)
 double calculateDistance(Location src, Location dst)
 {
     // Using Haversine Formula
-    double dlat = abs(src.point[0] - dst.point[0]) * M_PI / 180.0;
-    double dlon = abs(src.point[1] - dst.point[1]) * M_PI / 180.0;
+    double dlat = (src.point[0] - dst.point[0]) * M_PI / 180.0;
+    double dlon = (src.point[1] - dst.point[1]) * M_PI / 180.0;
 
     src.point[0] = src.point[0] * M_PI / 180.0;
     dst.point[0] = dst.point[0] * M_PI / 180.0;
@@ -154,6 +135,45 @@ double calculateDistance(Location src, Location dst)
     double rad = 6371;
     double c = 2 * asin(sqrt(a));
     return rad * c;
+}
+
+void calculateDistanceTest(Node* root, Location query, double &min_distance, Location &result, int depth)
+{
+    if (root == NULL) return;
+    calculateDistanceTest(root->left, query, min_distance, result, depth + 1);
+    calculateDistanceTest(root->right, query, min_distance, result, depth + 1);
+
+    double dis = calculateDistance(root->key, query);
+    if (dis < min_distance) {
+        min_distance = dis;
+        result = root->key;
+    }
+    return;
+}
+
+void calculateDistanceInAnotherRegion(Node* root, Location query, double &min_distance,
+Location &result, int depth)
+{
+    if (root == NULL) return;
+
+    double dis = calculateDistance(root->key, query);
+    if (dis < min_distance) {
+        min_distance = dis;
+        result = root->key;
+    }
+
+    int axis = depth % DIMENSION;
+    if (axis == 0) // X Axis
+    {
+        if (abs(query.point[depth % DIMENSION]) < abs(root->key.point[depth % DIMENSION]))
+        calculateDistanceInAnotherRegion(root->left, query, min_distance, result, depth + 1);
+    else calculateDistanceInAnotherRegion(root->right, query, min_distance, result, depth + 1);
+    } else {
+        if (query.point[depth % DIMENSION] < root->key.point[depth % DIMENSION])
+        calculateDistanceInAnotherRegion(root->left, query, min_distance, result, depth + 1);
+    else calculateDistanceInAnotherRegion(root->right, query, min_distance, result, depth + 1);
+    }
+    return;
 }
 
 // Find Nearest City From The Given Point
@@ -167,9 +187,62 @@ void findNearestNeighbor(Node* root, Location query, double &min_distance, Locat
         result = root->key;
     }
 
-    if (query.point[depth % dimension] < root->key.point[depth % dimension])
+    int axis = depth % DIMENSION;
+
+    if (query.point[axis] < root->key.point[axis])
+    {
         findNearestNeighbor(root->left, query, min_distance, result, depth + 1);
-    else findNearestNeighbor(root->right, query, min_distance, result, depth + 1);
+        
+        double distance_from_other_region;
+        if (axis == 0)
+        {   
+            Location temp;
+            temp.point[0] = -90;
+            temp.point[1] = query.point[1];
+
+            double dis1 = calculateDistance(temp, query);
+            double dis2 = calculateDistance(root->key, query);
+
+            distance_from_other_region = min(dis1, dis2);
+        } else {
+            Location temp;
+            temp.point[0] = query.point[0];
+            temp.point[1] = -180;
+
+            double dis1 = calculateDistance(temp, query);
+            double dis2 = calculateDistance(root->key, query);
+            distance_from_other_region = min(dis1, dis2);
+        }
+        if (distance_from_other_region < min_distance)
+            calculateDistanceInAnotherRegion(root->right, query, min_distance, result, depth + 1);
+    }
+    else {
+        findNearestNeighbor(root->right, query, min_distance, result, depth + 1);
+
+        int distance_from_other_region;
+        if (axis == 0)
+        {   
+            Location temp;
+            temp.point[0] = 90;
+            temp.point[1] = query.point[1];
+
+            double dis1 = calculateDistance(temp, query);
+            double dis2 = calculateDistance(root->key, query);
+
+            distance_from_other_region = min(dis1, dis2);
+        } else {
+            Location temp;
+            temp.point[0] = query.point[0];
+            temp.point[1] = 180;
+
+            double dis1 = calculateDistance(temp, query);
+            double dis2 = calculateDistance(root->key, query);
+            distance_from_other_region = min(dis1, dis2);
+        }
+        if (distance_from_other_region < min_distance)
+            calculateDistanceInAnotherRegion(root->left, query, min_distance, result, depth + 1);
+    }
+
     return;
 }
 

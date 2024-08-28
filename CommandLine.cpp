@@ -44,6 +44,7 @@ void cmdInsertCity(Node*& root) {
     locate.population = stoll(str_population);
 
     insertOneCity(root, locate, 0);
+    setBalance(root, 0);
 }
 
 void cmdInsertCitiesFromFile(Node*& root) {
@@ -55,6 +56,7 @@ void cmdInsertCitiesFromFile(Node*& root) {
 
     vector<Location> vt_location = readFile(str_path);
     insertListCity(root, vt_location, 0);
+    setBalance(root, 0);
     return;
 }
 
@@ -80,14 +82,25 @@ void cmdConductNearestNeighbor(Node*& root) {
     Location result;
     findNearestNeighbor(root, query, min_dis, result, 0);
 
+    double min_dis_test = 1e9;
+    Location result_test;
+    calculateDistanceTest(root, query, min_dis_test, result_test, 0);
+
     string str_output;
     getline(ss, str_output);
     if (str_output == "cmd") {
         cout << "======================\n";
-        cout << "Result:\n";
+        cout << "Result KD Tree:\n";
+        cout << "Min Distance: " << min_dis << '\n';
         cout << "City: " << result.city << '\n';
         cout << "Country: " << result.country << '\n';
         cout << "Population: " << result.population << '\n'; 
+        cout << "-------------------------------\n";
+        cout << "Actual Result:\n";
+        cout << "Min Distance: " << min_dis_test << '\n';
+        cout << "City: " << result_test.city << '\n';
+        cout << "Country: " << result_test.country << '\n';
+        cout << "Population: " << result_test.population << '\n'; 
     }
     else {
         ofstream ofs(str_output);
