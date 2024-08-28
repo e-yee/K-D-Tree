@@ -2,8 +2,16 @@
 
 #include "KD_Tree.h"
 #include "CommandLine.h"
+#include "File.h"
 
 using namespace std;
+
+void print(Node* root, ofstream &ofs) {
+    if (root == NULL) return;
+    print(root->left, ofs);
+    print(root->right, ofs);
+    ofs << root->key.city << " - " << root->key.country << "\n";
+}
 
 int main() {
     string str_continue;
@@ -33,6 +41,7 @@ int main() {
         switch (option) {
             case 0:
                 system("cls");
+                deleteList(root);
                 cout << "Exit\n";
                 return 0;
             case 1:
@@ -52,8 +61,10 @@ int main() {
                 break;
         }
 
-        cout << "Do you want to continue (Yes/No): ";
-        getline(cin, str_continue);
+        do {
+            cout << "Do you want to continue (Yes/No): ";
+            getline(cin, str_continue);
+        } while (str_continue != "Yes" && str_continue != "No");
     } while (str_continue == "Yes");
 
     cout << "Exit\n";

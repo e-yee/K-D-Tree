@@ -20,10 +20,18 @@ struct Node {
     Node* left;
     Node* right;
 
-    Node() {
-        left = right = NULL;
-    }
+    Node() : left(NULL), right(NULL) {}
+    Node(Location data) : key(data), left(NULL), right(NULL) {}
 };
 
-//1. Prepare the dataset
-vector<Location> readFile(string filename);
+void insertOneCity(Node* &root, Location data, int depth);
+
+void insertListCity(Node* &root, vector<Location> &list, int depth);
+
+void rangeSearch(Node* root, vector<Location> &result, pair<double, double> bot_left,
+pair<double, double> top_right, int depth);
+
+void findNearestNeighbor(Node* root, Location query, double &min_distance, Location &result, 
+int depth);
+
+void deleteList(Node* &root);

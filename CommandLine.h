@@ -4,6 +4,7 @@
 #include <string>
 
 #include "KD_Tree.h"
+#include "File.h"
 
 //3. User Interface
 void cmdloadCity(Node*& root);
