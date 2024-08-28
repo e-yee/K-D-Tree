@@ -191,8 +191,10 @@ void findNearestNeighbor(Node* root, Location query, double &min_distance, Locat
 
     if (query.point[axis] < root->key.point[axis])
     {
+        // Traverse To The Nearest Node
         findNearestNeighbor(root->left, query, min_distance, result, depth + 1);
         
+        // Find If There Is A Nearest Node In Another Subtree
         double distance_from_other_region;
         if (axis == 0)
         {   
@@ -217,8 +219,10 @@ void findNearestNeighbor(Node* root, Location query, double &min_distance, Locat
             calculateDistanceInAnotherRegion(root->right, query, min_distance, result, depth + 1);
     }
     else {
+        // Traverse To The Nearest Node
         findNearestNeighbor(root->right, query, min_distance, result, depth + 1);
 
+        // Find If There Is A Nearest Node In Another Subtree
         int distance_from_other_region;
         if (axis == 0)
         {   
