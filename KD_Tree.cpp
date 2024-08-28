@@ -137,19 +137,19 @@ double calculateDistance(Location src, Location dst)
     return rad * c;
 }
 
-void calculateDistanceTest(Node* root, Location query, double &min_distance, Location &result, int depth)
-{
-    if (root == NULL) return;
-    calculateDistanceTest(root->left, query, min_distance, result, depth + 1);
-    calculateDistanceTest(root->right, query, min_distance, result, depth + 1);
+// void calculateDistanceTest(Node* root, Location query, double &min_distance, Location &result, int depth)
+// {
+//     if (root == NULL) return;
+//     calculateDistanceTest(root->left, query, min_distance, result, depth + 1);
+//     calculateDistanceTest(root->right, query, min_distance, result, depth + 1);
 
-    double dis = calculateDistance(root->key, query);
-    if (dis < min_distance) {
-        min_distance = dis;
-        result = root->key;
-    }
-    return;
-}
+//     double dis = calculateDistance(root->key, query);
+//     if (dis < min_distance) {
+//         min_distance = dis;
+//         result = root->key;
+//     }
+//     return;
+// }
 
 void calculateDistanceInAnotherRegion(Node* root, Location query, double &min_distance,
 Location &result, int depth)
